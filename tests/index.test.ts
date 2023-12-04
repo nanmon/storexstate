@@ -14,6 +14,7 @@ import {
 	waitFor,
 } from "xstate";
 import { wait } from "./support";
+import { stat } from "fs";
 
 interface IncrementEvent {
 	type: "increment";
@@ -21,21 +22,17 @@ interface IncrementEvent {
 
 describe("xstore", () => {
 	it("creates a store and sends an event", async () => {
+		const { transition, actions } = createSlice({
+			name: 'counter',
+			initialState: { count: 0 },
+			transitions: {
+				increment: (state) => {
+					state.count += 1
+				}
+			}
+		})
 		const store = createStore({
-			counter: fromTransition(
-				(state, action: IncrementEvent) => {
-					switch (action.type) {
-						case "increment":
-							return {
-								...state,
-								count: state.count + 1,
-							};
-					}
-					return state;
-				},
-				{ count: 0 }
-			),
-			x: fromTransition((state) => state, {}),
+			counter: transition
 		});
 		const countSelector = createSelector(
 			(root: StoreSnapshot<typeof store>) => root.context.slices.counter,
@@ -43,7 +40,7 @@ describe("xstore", () => {
 		);
 		const actor = createActor(store);
 		actor.start();
-		actor.send({ type: "increment" });
+		actor.send(actions.increment());
 		const count = countSelector(actor.getSnapshot());
 		expect(count).toBe(1);
 	});
@@ -53,33 +50,29 @@ describe("xstore", () => {
 			"asyncIncrement",
 			fromPromise(({ input }) => wait(0).then(() => input))
 		);
-		const store = createStore({
-			counter: fromTransition(
-				(state, action: DoneActorEvent<number>) => {
-					switch (action.type) {
-						case asyncIncrement.init:
-							return {
-								...state,
-								loading: true,
-								error: false,
-							};
-						case asyncIncrement.done:
-							return {
-								...state,
-								count: state.count + action.output,
-								loading: false,
-							};
-						case asyncIncrement.error:
-							return {
-								...state,
-								error: true,
-								loading: false,
-							};
-					}
-					return state;
+		const { transition } = createSlice({
+			name: 'counter',
+			initialState: { count: 0, loading: false, error: false },
+			transitions: {
+				[asyncIncrement.init]: (state) => {
+					console.log(asyncIncrement.init)
+					state.loading = true
+					state.error = false
 				},
-				{ count: 0, loading: false, error: false }
-			),
+				[asyncIncrement.done]: (state, action: DoneActorEvent<number>) => {
+					console.log(asyncIncrement.done)
+					state.count += action.output
+					state.loading = false
+				},
+				[asyncIncrement.error]: (state) => {
+					console.log(asyncIncrement.error)
+					state.error = true
+					state.loading = false
+				}
+			}
+		})
+		const store = createStore({
+			counter: transition
 		});
 		const countSelector = createSelector(
 			(root: StoreSnapshot<typeof store>) => root.context.slices.counter,

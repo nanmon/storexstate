@@ -121,45 +121,70 @@ export function createSelector<TSnapshot, TSlice, TSelect>(
 	};
 }
 
-type TransitionCase<TState, TPayload = never> = (
+type SimpleTransitionCase<TState> = (
 	state: TState,
-	action: TPayload extends never ? {} : { payload: TPayload }
+	action?: any
+) => void
+type TransitionCase<TState, TPayload> = (
+	state: TState,
+	action: { payload: TPayload }
+) => void;
+type SpawnTransitionCase<TState, TOutput> = (
+	state: TState,
+	action: { type: string, output: TOutput }
 ) => void;
 interface FromTransitionsConfig<
 	TState,
-	TTransitionMap extends Record<string, TransitionCase<TState>>
+	TTransitionMap extends Record<string, SimpleTransitionCase<TState>>
 > {
 	name: string;
 	transitions: TTransitionMap;
 	initialState: TState;
 }
+type ExtractPayloadMap<TState, TTransitionMap extends Record<string, SimpleTransitionCase<TState>>> = {
+	[TKey in keyof TTransitionMap]: TTransitionMap[TKey] extends TransitionCase<TState, infer TPayload>
+		? TPayload
+		: never
+}
 type GetActionCreators<
 	TState,
-	TTransitionMap extends Record<string, TransitionCase<TState>>
+	TTransitionMap extends Record<string, SimpleTransitionCase<TState>>
 > = {
 	[TKey in keyof TTransitionMap]: TTransitionMap[TKey] extends TransitionCase<
 		TState,
 		infer TPayload
 	>
-		? TPayload extends never
-			? () => { type: string }
-			: (payload: TPayload) => { type: string; payload: TPayload }
+		? TPayload extends {}
+			? (payload: TPayload) => { type: string; payload: TPayload }
+			: () => { type: string }
 		: never;
 };
+// type Config<TState, TPayloads extends Record<string, any>> = {
+// 	state: TState
+// 	name: string
+// 	transitions: Record<string, SimpleTransitionCase<TState>> extends {
+// 		[TKey in keyof TPayloads]: TransitionCase<TState, TPayloads[TKey]>
+// 	}
+// }
+
+function getTransitionKey(sliceName: string, actionType: string) {
+	const typeSplits = actionType.split(".");
+	if (typeSplits[0] === sliceName) return typeSplits[1] // action creator
+	if (typeSplits[0] === 'xstate') return actionType // spawn actor
+}
+
 export function createSlice<
 	TState,
-	TTransitionMap extends Record<string, TransitionCase<TState>>
+	TTransitionMap extends Record<string, SimpleTransitionCase<TState>>
 >(config: FromTransitionsConfig<TState, TTransitionMap>) {
 	const transition = fromTransition((state, action) => {
-		const [sliceName, transitionKey] = action.type.split(".");
-		const transition = config.transitions[transitionKey];
-		if (transition && config.name === sliceName) {
-			const stateCopy = { ...state };
-			// @ts-ignore
-			transition(stateCopy, action);
-			return stateCopy;
-		}
-		return state;
+		const transitionKey = getTransitionKey(config.name, action.type)
+		if (!transitionKey) return state
+		const transitionCase = config.transitions[transitionKey]
+		if (!transitionCase) return state
+		const stateCopy = { ...state };
+		transitionCase(stateCopy, action);
+		return stateCopy;
 	}, config.initialState);
 
 	const actions = Object.fromEntries(
@@ -167,7 +192,7 @@ export function createSlice<
 			type,
 			(payload: any) => ({ type: `${config.name}.${type}`, payload }),
 		])
-	) as unknown as GetActionCreators<TState, TTransitionMap>;
+	) as unknown as GetActionCreators<TState, typeof config.transitions>;
 
 	return {
 		transition,
