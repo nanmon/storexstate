@@ -1,6 +1,10 @@
 {
   "name": "xstore",
   "module": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./react": "./react.ts"
+  },
   "type": "module",
   "devDependencies": {
     "@happy-dom/global-registrator": "^12.10.3",
