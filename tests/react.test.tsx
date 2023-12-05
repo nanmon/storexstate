@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { XStoreProvider, useDispatch, useReselector } from "../react";
+import { StoreProvider, useDispatch, useReselector } from "../react";
 import { createSelector, createSlice, createStore } from "..";
 import { SnapshotFrom } from "xstate";
 
@@ -35,11 +35,11 @@ function Test() {
 	)
 }
 
-describe('xstore/react', () => {
+describe('storexstate/react', () => {
 	const TestApp = () => (
-		<XStoreProvider store={store}>
+		<StoreProvider store={store}>
 			<Test/>
-		</XStoreProvider>
+		</StoreProvider>
 	)
 
 	it('increments the counter', async () => {

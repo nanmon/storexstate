@@ -1,4 +1,4 @@
-# xstore
+# storexstate
 
 To install dependencies:
 

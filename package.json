@@ -1,5 +1,5 @@
 {
-  "name": "xstore",
+  "name": "storexstate",
   "module": "index.ts",
   "exports": {
     ".": "./index.ts",

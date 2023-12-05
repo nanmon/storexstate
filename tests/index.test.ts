@@ -14,7 +14,7 @@ import {
 } from "xstate";
 import { wait } from "./support";
 
-describe("xstore", () => {
+describe("storexstate", () => {
 	it("creates a store and sends an event", async () => {
 		const { transition, actions } = createSlice({
 			name: "counter",
