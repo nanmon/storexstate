@@ -23,16 +23,16 @@ interface IncrementEvent {
 describe("xstore", () => {
 	it("creates a store and sends an event", async () => {
 		const { transition, actions } = createSlice({
-			name: 'counter',
+			name: "counter",
 			initialState: { count: 0 },
 			transitions: {
 				increment: (state) => {
-					state.count += 1
-				}
-			}
-		})
+					state.count += 1;
+				},
+			},
+		});
 		const store = createStore({
-			counter: transition
+			counter: transition,
 		});
 		const countSelector = createSelector(
 			(root: StoreSnapshot<typeof store>) => root.context.slices.counter,
@@ -51,28 +51,25 @@ describe("xstore", () => {
 			fromPromise(({ input }) => wait(0).then(() => input))
 		);
 		const { transition } = createSlice({
-			name: 'counter',
+			name: "counter",
 			initialState: { count: 0, loading: false, error: false },
 			transitions: {
 				[asyncIncrement.init]: (state) => {
-					console.log(asyncIncrement.init)
-					state.loading = true
-					state.error = false
+					state.loading = true;
+					state.error = false;
 				},
 				[asyncIncrement.done]: (state, action: DoneActorEvent<number>) => {
-					console.log(asyncIncrement.done)
-					state.count += action.output
-					state.loading = false
+					state.count += action.output;
+					state.loading = false;
 				},
 				[asyncIncrement.error]: (state) => {
-					console.log(asyncIncrement.error)
-					state.error = true
-					state.loading = false
-				}
-			}
-		})
+					state.error = true;
+					state.loading = false;
+				},
+			},
+		});
 		const store = createStore({
-			counter: transition
+			counter: transition,
 		});
 		const countSelector = createSelector(
 			(root: StoreSnapshot<typeof store>) => root.context.slices.counter,
