@@ -3,6 +3,11 @@
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
+    "@happy-dom/global-registrator": "^12.10.3",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
+    "@types/react": "^18.2.42",
     "bun-types": "latest"
   },
   "peerDependencies": {
@@ -10,5 +15,9 @@
   },
   "dependencies": {
     "xstate": "^5.0.0"
+  },
+  "optionalDependencies": {
+    "@xstate/react": "^4.0.0",
+    "react": "^18.2.0"
   }
 }

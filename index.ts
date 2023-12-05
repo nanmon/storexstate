@@ -110,18 +110,17 @@ export function createSpawnEvent<TInput>(
 	spawnEvent["error"] = spawnActorTypes.error(actorId);
 	return spawnEvent;
 }
-const defaultRefToSnapshot = <TRef extends AnyActorRef>(
-	ref: TRef
-): SnapshotFrom<TRef> => ref.getSnapshot();
 export function createSelector<TSnapshot, TSlice extends AnyActorRef, TSelect>(
 	sliceSelect: (root: TSnapshot) => TSlice,
-	reselect: (slice: SnapshotFrom<TSlice>) => TSelect,
-	refToSnapshot = defaultRefToSnapshot<TSlice>
-): (root: TSnapshot) => TSelect {
-	return (root) => {
+	reselect: (slice: SnapshotFrom<TSlice>) => TSelect
+) {
+	const selector = (root: TSnapshot) => {
 		const sliceRef = sliceSelect(root);
-		return reselect(refToSnapshot(sliceRef));
+		return reselect(sliceRef.getSnapshot());
 	};
+	selector[0] = sliceSelect
+	selector[1] = reselect
+	return selector
 }
 
 type SimpleTransitionCase<TState> = (state: TState, action?: any) => void;

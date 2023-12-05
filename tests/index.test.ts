@@ -9,16 +9,10 @@ import {
 import {
 	createActor,
 	fromPromise,
-	fromTransition,
 	DoneActorEvent,
 	waitFor,
 } from "xstate";
 import { wait } from "./support";
-import { stat } from "fs";
-
-interface IncrementEvent {
-	type: "increment";
-}
 
 describe("xstore", () => {
 	it("creates a store and sends an event", async () => {
