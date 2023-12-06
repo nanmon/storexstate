@@ -22,8 +22,11 @@ describe("storexstate", () => {
 			name: "counter",
 			initialState: { count: 0 },
 			transitions: {
-				increment: (state) => {
+				incrementByOne: (state) => {
 					state.count += 1;
+				},
+				incrementBy: (state, action: { payload: number }) => {
+					state.count += action.payload;
 				},
 			},
 		});
@@ -36,9 +39,13 @@ describe("storexstate", () => {
 		);
 		const actor = createActor(store);
 		actor.start();
-		actor.send(actions.increment());
-		const count = countSelector(actor.getSnapshot());
+		actor.send(actions.incrementByOne());
+		let count = countSelector(actor.getSnapshot());
 		expect(count).toBe(1);
+
+		actor.send(actions.incrementBy(5));
+		count = countSelector(actor.getSnapshot());
+		expect(count).toBe(6);
 	});
 
 	it("creates and sends spawn event to store", async () => {
