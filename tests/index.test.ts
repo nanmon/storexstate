@@ -6,7 +6,14 @@ import {
 	createStore,
 	createSlice,
 } from "..";
-import { createActor, fromPromise, DoneActorEvent, waitFor } from "xstate";
+import {
+	createActor,
+	fromPromise,
+	DoneActorEvent,
+	waitFor,
+	createMachine,
+	assign,
+} from "xstate";
 import { wait } from "./support";
 
 describe("storexstate", () => {
@@ -83,21 +90,21 @@ describe("storexstate", () => {
 		expect(context.count).toBe(5);
 	});
 
-	it("creates reducer fromTransitions", async () => {
-		const slice = createSlice({
-			name: "counter",
-			initialState: { count: 0 },
-			transitions: {
-				increment: (state, action: { payload: 1 }) => {
-					state.count += action.payload;
-				},
-				decrement: (state, action: { payload: 2 }) => {
-					state.count -= action.payload;
+	it("uses machine as slice", async () => {
+		const slice = createMachine({
+			context: {
+				count: 0,
+			},
+			on: {
+				increment: {
+					actions: assign({
+						count: ({ context }) => context.count + 1,
+					}),
 				},
 			},
 		});
 		const store = createStore({
-			counter: slice.transition,
+			counter: slice,
 		});
 		const countSelector = createSelector(
 			(root: StoreSnapshot<typeof store>) => root.context.slices.counter,
@@ -105,11 +112,75 @@ describe("storexstate", () => {
 		);
 		const actor = createActor(store);
 		actor.start();
-		actor.send(slice.actions.increment(1));
+		actor.send({ type: "increment" });
 		let count = countSelector(actor.getSnapshot());
 		expect(count).toBe(1);
-		actor.send(slice.actions.decrement(2));
-		count = countSelector(actor.getSnapshot());
-		expect(count).toBe(-1);
+	});
+
+	it("uses machine for spawn event", async () => {
+		const asyncIncrement = createSpawnEvent<number>(
+			"asyncIncrement",
+			createMachine({
+				context: ({ input }) => ({
+					input,
+				}),
+				after: {
+					0: {
+						target: ".done",
+					},
+				},
+				initial: "init",
+				states: {
+					init: {},
+					done: {
+						type: "final",
+					},
+				},
+				// @ts-ignore
+				output: ({ context }) => context.input,
+			})
+		);
+		const { transition } = createSlice({
+			name: "counter",
+			initialState: { count: 0, loading: false, error: false },
+			transitions: {
+				[asyncIncrement.init]: (state) => {
+					state.loading = true;
+					state.error = false;
+				},
+				[asyncIncrement.done]: (state, action: DoneActorEvent<number>) => {
+					state.count += action.output;
+					state.loading = false;
+				},
+				[asyncIncrement.error]: (state) => {
+					state.error = true;
+					state.loading = false;
+				},
+			},
+		});
+		const store = createStore({
+			counter: transition,
+		});
+		const countSelector = createSelector(
+			(root: StoreSnapshot<typeof store>) => root.context.slices.counter,
+			(counter) => counter.context
+		);
+		const actor = createActor(store);
+		actor.start();
+		actor.send(asyncIncrement(5));
+		let snapshot = await waitFor(
+			actor,
+			(snapshot) => countSelector(snapshot).loading
+		);
+		let context = countSelector(snapshot);
+		expect(context.loading).toBeTrue();
+		expect(context.count).toBe(0);
+		snapshot = await waitFor(
+			actor,
+			(snapshot) => !countSelector(snapshot).loading
+		);
+		context = countSelector(snapshot);
+		expect(context.loading).toBeFalse();
+		expect(context.count).toBe(5);
 	});
 });
