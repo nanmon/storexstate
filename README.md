@@ -57,8 +57,10 @@ const store = createStore({
 
 // create selectors
 const countSelector = createSelector(
-	(root: SnapshotFrom<typeof store>) => root.context.slices.counter, // select slice from store's snapshot
-	(counter) => counter.context.count // select anything from slice's snapshot
+	// select slice ref from store
+	(root: SnapshotFrom<typeof store>) => root.context.slices.counter,
+	// select anything from slice's snapshot
+	(counter) => counter.context.count
 );
 ```
 
@@ -130,7 +132,7 @@ import { createMachine } from "xstate";
 
 const asyncIncrement = createSpawnEvent<number>(
 	"asyncIncrement",
-	// any actor logic with input and output
+	// any actor logic with input, output, and reaches final state by itself
 	createMachine({
 		context: ({ input }) => ({
 			input,
