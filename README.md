@@ -17,6 +17,7 @@ import {
 	createStore,
 	createSelector,
 } from "storexstate";
+import { fromPromise } from "xstate";
 
 // create spawn events if you need async logic
 const asyncIncrement = createSpawnEvent<number>(
@@ -56,8 +57,8 @@ const store = createStore({
 
 // create selectors
 const countSelector = createSelector(
-	(root: SnapshotFrom<typeof store>) => root.context.slices.counter, // select slice
-	(counter) => counter.context.count // select anything from slice
+	(root: SnapshotFrom<typeof store>) => root.context.slices.counter, // select slice from store's snapshot
+	(counter) => counter.context.count // select anything from slice's snapshot
 );
 ```
 
