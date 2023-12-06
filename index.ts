@@ -3,28 +3,18 @@ import {
 	ActorRefFrom,
 	AnyActorLogic,
 	AnyActorRef,
-	EventObject,
 	SnapshotFrom,
 	assign,
 	fromTransition,
 	setup,
 } from "xstate";
 
-const spawnActorTypes = {
-	spawn: () => "xstate.store.spawn" as const,
-	init: (actorId: string) => `xstate.init.actor.${actorId}`,
-	done: (actorId: string) => `xstate.done.actor.${actorId}`,
-	error: (actorId: string) => `xstate.error.actor.${actorId}`,
-};
+// types defs
 type SpawnEventType = ReturnType<typeof spawnActorTypes.spawn>;
 type Slices<TLogic extends AnyActorLogic = AnyActorLogic> = Record<
 	string,
 	TLogic
 >;
-
-export interface PayloadEvent<TPayload> extends EventObject {
-	payload: TPayload;
-}
 export interface StoreContext<
 	TSlices extends Record<string, AnyActorLogic> = Record<string, AnyActorLogic>
 > {
@@ -37,6 +27,43 @@ interface SpawnActorEvent<TInput = any> {
 	logic: ActorLogic<any, any, TInput>;
 	input: TInput;
 }
+export type Store<TSlices extends Slices = any> = ReturnType<
+	typeof createStore<TSlices>
+>;
+type SimpleTransitionCase<TState> = (state: TState, action?: any) => void;
+type TransitionCase<TState, TPayload> = (
+	state: TState,
+	action: { payload: TPayload }
+) => void;
+interface CreateSliceConfig<
+	TState,
+	TTransitionMap extends Record<string, SimpleTransitionCase<TState>>
+> {
+	name: string;
+	transitions: TTransitionMap;
+	initialState: TState;
+}
+type GetActionCreators<
+	TState,
+	TTransitionMap extends Record<string, SimpleTransitionCase<TState>>
+> = {
+	[TKey in keyof TTransitionMap]: TTransitionMap[TKey] extends TransitionCase<
+		TState,
+		infer TPayload
+	>
+		? TPayload extends {}
+			? (payload: TPayload) => { type: string; payload: TPayload }
+			: () => { type: string }
+		: never;
+};
+
+// implementation
+const spawnActorTypes = {
+	spawn: () => "xstate.store.spawn" as const,
+	init: (actorId: string) => `xstate.init.actor.${actorId}`,
+	done: (actorId: string) => `xstate.done.actor.${actorId}`,
+	error: (actorId: string) => `xstate.error.actor.${actorId}`,
+};
 export function createStore<TSlices extends Record<string, AnyActorLogic>>(
 	slices: TSlices
 ) {
@@ -90,10 +117,6 @@ export function createStore<TSlices extends Record<string, AnyActorLogic>>(
 	});
 	return store;
 }
-export type Store<TSlices extends Slices = any> = ReturnType<
-	typeof createStore<TSlices>
->;
-export type StoreSnapshot<TStore extends Store> = SnapshotFrom<TStore>;
 
 export function createSpawnEvent<TInput>(
 	actorId: string,
@@ -123,33 +146,6 @@ export function createSelector<TSnapshot, TSlice extends AnyActorRef, TSelect>(
 	return selector;
 }
 
-type SimpleTransitionCase<TState> = (state: TState, action?: any) => void;
-type TransitionCase<TState, TPayload> = (
-	state: TState,
-	action: { payload: TPayload }
-) => void;
-interface FromTransitionsConfig<
-	TState,
-	TTransitionMap extends Record<string, SimpleTransitionCase<TState>>
-> {
-	name: string;
-	transitions: TTransitionMap;
-	initialState: TState;
-}
-type GetActionCreators<
-	TState,
-	TTransitionMap extends Record<string, SimpleTransitionCase<TState>>
-> = {
-	[TKey in keyof TTransitionMap]: TTransitionMap[TKey] extends TransitionCase<
-		TState,
-		infer TPayload
-	>
-		? TPayload extends {}
-			? (payload: TPayload) => { type: string; payload: TPayload }
-			: () => { type: string }
-		: never;
-};
-
 function getTransitionKey(sliceName: string, actionType: string) {
 	const typeSplits = actionType.split(".");
 	if (typeSplits[0] === sliceName) return typeSplits[1]; // action creator
@@ -159,7 +155,7 @@ function getTransitionKey(sliceName: string, actionType: string) {
 export function createSlice<
 	TState,
 	TTransitionMap extends Record<string, SimpleTransitionCase<TState>>
->(config: FromTransitionsConfig<TState, TTransitionMap>) {
+>(config: CreateSliceConfig<TState, TTransitionMap>) {
 	const transition = fromTransition((state, action) => {
 		const transitionKey = getTransitionKey(config.name, action.type);
 		if (!transitionKey) return state;

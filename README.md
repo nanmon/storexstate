@@ -18,6 +18,7 @@ import {
 	createSelector,
 } from "storexstate";
 import { fromPromise } from "xstate";
+import type { DoneActorEvent, SnapshotFrom } from "xstate";
 
 // create spawn events if you need async logic
 const asyncIncrement = createSpawnEvent<number>(

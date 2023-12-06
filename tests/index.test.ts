@@ -1,11 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import {
-	StoreSnapshot,
-	createSelector,
-	createSpawnEvent,
-	createStore,
-	createSlice,
-} from "..";
+import { createSelector, createSpawnEvent, createStore, createSlice } from "..";
 import {
 	createActor,
 	fromPromise,
@@ -13,6 +7,7 @@ import {
 	waitFor,
 	createMachine,
 	assign,
+	SnapshotFrom,
 } from "xstate";
 import { wait } from "./support";
 
@@ -34,7 +29,7 @@ describe("storexstate", () => {
 			counter: transition,
 		});
 		const countSelector = createSelector(
-			(root: StoreSnapshot<typeof store>) => root.context.slices.counter,
+			(root: SnapshotFrom<typeof store>) => root.context.slices.counter,
 			(counter) => counter.context.count
 		);
 		const actor = createActor(store);
@@ -75,7 +70,7 @@ describe("storexstate", () => {
 			counter: transition,
 		});
 		const countSelector = createSelector(
-			(root: StoreSnapshot<typeof store>) => root.context.slices.counter,
+			(root: SnapshotFrom<typeof store>) => root.context.slices.counter,
 			(counter) => counter.context
 		);
 		const actor = createActor(store);
@@ -114,7 +109,7 @@ describe("storexstate", () => {
 			counter: slice,
 		});
 		const countSelector = createSelector(
-			(root: StoreSnapshot<typeof store>) => root.context.slices.counter,
+			(root: SnapshotFrom<typeof store>) => root.context.slices.counter,
 			(counter) => counter.context.count
 		);
 		const actor = createActor(store);
@@ -169,7 +164,7 @@ describe("storexstate", () => {
 			counter: transition,
 		});
 		const countSelector = createSelector(
-			(root: StoreSnapshot<typeof store>) => root.context.slices.counter,
+			(root: SnapshotFrom<typeof store>) => root.context.slices.counter,
 			(counter) => counter.context
 		);
 		const actor = createActor(store);
