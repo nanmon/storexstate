@@ -15,10 +15,10 @@
 		"@testing-library/react": "^14.1.2",
 		"@testing-library/user-event": "^14.5.1",
 		"@types/react": "^18.2.42",
-		"bun-types": "latest"
+		"bun-types": "latest",
+		"typescript": "^5.0.0"
 	},
 	"peerDependencies": {
-		"typescript": "^5.0.0",
 		"xstate": "^5.0.0",
 		"@xstate/react": "^4.0.0",
 		"react": ">16.0.0"
