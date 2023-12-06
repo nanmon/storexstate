@@ -1,6 +1,7 @@
 {
 	"name": "storexstate",
-	"version": "0.1.4",
+	"version": "0.1.5",
+	"repository": "github:nanmon/storexstate",
 	"exports": {
 		".": "./build/index.js",
 		"./react": "./build/react.js"
