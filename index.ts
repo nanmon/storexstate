@@ -118,9 +118,9 @@ export function createSelector<TSnapshot, TSlice extends AnyActorRef, TSelect>(
 		const sliceRef = sliceSelect(root);
 		return reselect(sliceRef.getSnapshot());
 	};
-	selector[0] = sliceSelect
-	selector[1] = reselect
-	return selector
+	selector[0] = sliceSelect;
+	selector[1] = reselect;
+	return selector;
 }
 
 type SimpleTransitionCase<TState> = (state: TState, action?: any) => void;

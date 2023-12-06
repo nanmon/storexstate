@@ -1,28 +1,30 @@
 {
-  "name": "storexstate",
-  "version": "0.1.0",
-  "module": "index.ts",
-  "exports": {
-    ".": "./index.ts",
-    "./react": "./react.ts"
-  },
-  "type": "module",
-  "devDependencies": {
-    "@happy-dom/global-registrator": "^12.10.3",
-    "@testing-library/jest-dom": "^6.1.5",
-    "@testing-library/react": "^14.1.2",
-    "@testing-library/user-event": "^14.5.1",
-    "@types/react": "^18.2.42",
-    "bun-types": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "xstate": "^5.0.0"
-  },
-  "optionalDependencies": {
-    "@xstate/react": "^4.0.0",
-    "react": "^18.2.0"
-  }
+	"name": "storexstate",
+	"version": "0.1.1",
+	"exports": {
+		".": "./build/index.js",
+		"./react": "./build/react.js"
+	},
+	"scripts": {
+		"prepublishOnly": "bun bundle.ts"
+	},
+	"type": "module",
+	"devDependencies": {
+		"@happy-dom/global-registrator": "^12.10.3",
+		"@testing-library/jest-dom": "^6.1.5",
+		"@testing-library/react": "^14.1.2",
+		"@testing-library/user-event": "^14.5.1",
+		"@types/react": "^18.2.42",
+		"bun-types": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"xstate": "^5.0.0"
+	},
+	"optionalDependencies": {
+		"@xstate/react": "^4.0.0",
+		"react": "^18.2.0"
+	}
 }

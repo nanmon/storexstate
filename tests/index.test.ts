@@ -6,12 +6,7 @@ import {
 	createStore,
 	createSlice,
 } from "..";
-import {
-	createActor,
-	fromPromise,
-	DoneActorEvent,
-	waitFor,
-} from "xstate";
+import { createActor, fromPromise, DoneActorEvent, waitFor } from "xstate";
 import { wait } from "./support";
 
 describe("storexstate", () => {

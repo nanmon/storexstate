@@ -20,11 +20,13 @@ export function useStore() {
 
 export function useDispatch() {
 	const ref = useStore();
-	return ref.send
+	return ref.send;
 }
 
 export function useReselector<TSlice extends AnyActorRef, TSelect>(
-	selector: ReturnType<typeof createSelector<SnapshotFrom<Store>, TSlice, TSelect>>
+	selector: ReturnType<
+		typeof createSelector<SnapshotFrom<Store>, TSlice, TSelect>
+	>
 ) {
 	const ref = useStore();
 	const sliceRef = useSelector(ref, selector[0]);
