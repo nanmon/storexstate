@@ -1,9 +1,9 @@
-import React, { useContext } from "react";
+import { createContext, useContext } from "react";
 import { ActorRefFrom, AnyActorRef, SnapshotFrom } from "xstate";
 import { useActorRef, useSelector } from "@xstate/react";
 import { Store, createSelector } from ".";
 
-const StoreContext = React.createContext<ActorRefFrom<Store> | null>(null);
+const StoreContext = createContext<ActorRefFrom<Store> | null>(null);
 interface XStateProviderProps extends React.PropsWithChildren {
 	store: Store;
 }

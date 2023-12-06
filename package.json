@@ -1,6 +1,6 @@
 {
 	"name": "storexstate",
-	"version": "0.1.1",
+	"version": "0.1.3",
 	"exports": {
 		".": "./build/index.js",
 		"./react": "./build/react.js"
@@ -18,13 +18,18 @@
 		"bun-types": "latest"
 	},
 	"peerDependencies": {
-		"typescript": "^5.0.0"
-	},
-	"dependencies": {
-		"xstate": "^5.0.0"
-	},
-	"optionalDependencies": {
+		"typescript": "^5.0.0",
+		"xstate": "^5.0.0",
 		"@xstate/react": "^4.0.0",
-		"react": "^18.2.0"
+		"react": ">16.0.0"
+	},
+	"dependencies": {},
+	"peerDependenciesMeta": {
+		"react": {
+			"optional": true
+		},
+		"@xstate/react": {
+			"optional": true
+		}
 	}
 }
